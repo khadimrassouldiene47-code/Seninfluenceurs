@@ -1,0 +1,30 @@
+# robots.txt — SENINFLUENCEURS
+# https://www.seninfluenceurs.com
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.seninfluenceurs.com/sitemap.xml
+
+# Specific AI crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+# Disallow admin pages from indexing
+User-agent: *
+Disallow: /admin
+Disallow: /api/
+Disallow: /*.json$

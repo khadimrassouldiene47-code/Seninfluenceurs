@@ -148,7 +148,7 @@ export default function Navbar({ activePage, setActivePage, onOpenSearch, darkMo
       {/* ——— MOBILE DRAWER ——— */}
       {mobileMenuOpen && (
         <div className={`md:hidden border-t px-4 pt-3 pb-6 mt-2 ${
-          darkMode ? 'bg-dark-bg/95 border-white/10' : 'bg-white/98 border-gray-100 shadow-xl'
+          darkMode ? 'bg-[#0A0B0E] border-white/10 shadow-2xl' : 'bg-white border-gray-200 shadow-xl'
         }`}>
           <div className="flex flex-col space-y-1">
             {navItems.map(item => (
