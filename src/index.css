@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   DESIGN SYSTEM — SENINFLUENCEURS
+   Couleur Primaire Officielle : #8d1864
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* Light mode tokens */
+    --bg:          #F9FAFB;
+    --surface:     #FFFFFF;
+    --card:        #F3F4F6;
+    --border:      rgba(0,0,0,0.08);
+    --text:        #111827;
+    --muted:       #6B7280;
+    --brand:       #8d1864;
+    --brand-light: #fdf2f8;
+    --brand-glow:  rgba(141,24,100,0.18);
+  }
+
+  .dark {
+    /* Dark mode tokens */
+    --bg:          #0A0B0E;
+    --surface:     #12141A;
+    --card:        #181A22;
+    --border:      rgba(255,255,255,0.08);
+    --text:        #F3F4F6;
+    --muted:       #9CA3AF;
+    --brand:       #8d1864;
+    --brand-light: #2c051f;
+    --brand-glow:  rgba(141,24,100,0.25);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* Selection */
+  ::selection {
+    background: rgba(141,24,100,0.25);
+    color: #8d1864;
+  }
+}
+
+/* ============================================================
+   COMPONENT TOKENS
+   ============================================================ */
+
+/* Glass panels */
+.glass-dark {
+  background: rgba(18, 20, 26, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.glass-light {
+  background: #FFFFFF;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.06);
+}
+
+/* Default panel */
+.glass-panel {
+  background: rgba(18,20,26,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.dark .glass-panel {
+  background: rgba(18,20,26,0.85);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Ensure light mode panels have dark readable text */
+:root:not(.dark) .glass-panel {
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 2px 24px rgba(0,0,0,0.05);
+}
+
+.glass-panel-subtle {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+:root:not(.dark) .glass-panel-subtle {
+  background: #F9FAFB;
+  border: 1px solid rgba(0,0,0,0.07);
+}
+
+.glass-dropdown {
+  background: rgba(12,14,18,0.96);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+:root:not(.dark) .glass-dropdown {
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+}
+
+/* ============================================================
+   GRADIENT TEXT UTILITIES
+   ============================================================ */
+.text-brand-gradient {
+  background: linear-gradient(135deg, #c026d3 0%, #8d1864 60%, #5c0f41 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #F0E0A0 0%, #C9A64A 50%, #8B6A1E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================================
+   MARQUEE PAUSE ON HOVER
+   ============================================================ */
+.pause-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ============================================================
+   MOBILE FIXES
+   ============================================================ */
+@media (max-width: 640px) {
+  .hero-heading {
+    font-size: 2rem !important;
+    line-height: 2.3rem !important;
+  }
+}
