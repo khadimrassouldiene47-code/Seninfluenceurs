@@ -23,7 +23,7 @@ export default function Footer({ onNavigate, onOpenLegal, onOpenAdmin, darkMode 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
-              <span className="text-[11px] font-bold text-brand-500 uppercase tracking-widest block mb-1">Newsletter</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest block mb-1" style={{color:'#8d1864'}}>Newsletter</span>
               <h3 className={`text-xl font-display font-bold ${textPrimary}`}>Restez au cœur de l'influence africaine</h3>
               <p className="text-gray-400 text-xs mt-1">Analyses, tendances et opportunités chaque mois.</p>
             </div>
@@ -61,7 +61,7 @@ export default function Footer({ onNavigate, onOpenLegal, onOpenAdmin, darkMode 
                   className="w-full h-full object-contain" onError={e => { e.currentTarget.src = '/logo.webp'; }} />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="font-display font-black text-xl text-white tracking-tight">SEN<span className="text-brand-500">INFLUENCEURS</span></span>
+                <span className="font-display font-black text-xl tracking-tight" style={{color:'#8d1864'}}>SEN<span style={{color:'#8d1864'}}>INFLUENCEURS</span></span>
                 <span className="text-[9px] uppercase tracking-wider text-gray-400">Première Agence • Dakar</span>
               </div>
             </button>
@@ -80,7 +80,7 @@ export default function Footer({ onNavigate, onOpenLegal, onOpenAdmin, darkMode 
                 { label: 'YT', href: 'https://youtube.com/watch?v=mNXB7m8dOBE&feature=share' },
               ].map(({ label, href }) => (
                 <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg bg-white/[0.05] hover:bg-brand-600/80 text-gray-300 hover:text-white border border-white/10 hover:border-brand-600/50 flex items-center justify-center transition-all text-[10px] font-bold">
+                  className="w-8 h-8 rounded-lg bg-white/[0.05] text-gray-300 hover:text-white border border-white/10 flex items-center justify-center transition-all text-[10px] font-bold" style={{transition:'all .2s'}} onMouseEnter={e=>{e.currentTarget.style.background='#8d1864';e.currentTarget.style.borderColor='#8d1864'}} onMouseLeave={e=>{e.currentTarget.style.background='';e.currentTarget.style.borderColor=''}}>
                   {label}
                 </a>
               ))}
@@ -125,7 +125,7 @@ export default function Footer({ onNavigate, onOpenLegal, onOpenAdmin, darkMode 
             <h4 className="font-display font-bold text-white text-xs uppercase tracking-wider mb-4">Bureaux Dakar</h4>
             <div className="space-y-3">
               <div className="flex items-start space-x-2">
-                <MapPin className="w-3.5 h-3.5 text-brand-500 shrink-0 mt-0.5" />
+                <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{color:'#8d1864'}} />
                 <span>29 Bvd Libération, Imm. Fahd, Dakar</span>
               </div>
               <div className="flex items-center space-x-2">

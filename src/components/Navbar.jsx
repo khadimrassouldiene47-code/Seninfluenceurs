@@ -38,8 +38,8 @@ export default function Navbar({ activePage, setActivePage, onOpenSearch, darkMo
   const textColor   = darkMode ? 'text-slate-200' : 'text-gray-700';
   const activeColor = darkMode
     ? 'bg-white/15 text-white font-semibold'
-    : 'bg-brand-50 text-brand-600 font-semibold';
-  const hoverColor  = darkMode ? 'hover:text-white hover:bg-white/5' : 'hover:text-brand-600 hover:bg-brand-50/60';
+    : 'bg-[#8d1864]/10 text-[#8d1864] font-semibold';
+  const hoverColor  = darkMode ? 'hover:text-white hover:bg-white/5' : 'hover:text-[#8d1864] hover:bg-[#8d1864]/10';
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerBg} py-3 sm:py-4`}>
@@ -57,8 +57,8 @@ export default function Navbar({ activePage, setActivePage, onOpenSearch, darkMo
               />
             </div>
             <div className="flex flex-col leading-none">
-              <span className={`font-display font-black text-xl tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                SEN<span className="text-brand-600">INFLUENCEURS</span>
+              <span className="font-display font-black text-xl tracking-tight" style={{color: darkMode ? '#fff' : '#8d1864'}}>
+                SEN<span style={{color: '#8d1864'}}>INFLUENCEURS</span>
               </span>
               <span className={`text-[9px] uppercase tracking-widest font-medium ${darkMode ? 'text-slate-400' : 'text-gray-400'}`}>
                 Première Agence • Sénégal
@@ -80,7 +80,7 @@ export default function Navbar({ activePage, setActivePage, onOpenSearch, darkMo
               >
                 <span>{item.label}</span>
                 {item.badge && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-brand-500/15 text-brand-500 font-semibold border border-brand-500/25">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold border" style={{background:'#8d186420', color:'#8d1864', borderColor:'#8d186440'}}>
                     {item.badge}
                   </span>
                 )}
@@ -157,13 +157,13 @@ export default function Navbar({ activePage, setActivePage, onOpenSearch, darkMo
                 onClick={() => go(item.id)}
                 className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-left ${
                   activePage === item.id
-                    ? (darkMode ? 'bg-white/15 text-white' : 'bg-brand-50 text-brand-700')
+                    ? (darkMode ? 'bg-white/15 text-white' : 'text-[#8d1864] bg-[#8d1864]/10')
                     : (darkMode ? 'text-slate-300 hover:bg-white/5' : 'text-gray-700 hover:bg-gray-50')
                 }`}
               >
                 <span>{item.label}</span>
                 {item.badge ? (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-500 border border-brand-500/25 font-semibold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold border" style={{background:'#8d186420', color:'#8d1864', borderColor:'#8d186440'}}>
                     {item.badge}
                   </span>
                 ) : (
