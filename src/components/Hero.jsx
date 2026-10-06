@@ -108,7 +108,7 @@ export default function Hero({ darkMode, onExploreInfluencers, onStartCampaign }
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={onExploreInfluencers}
-                className="px-7 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm shadow-xl shadow-brand-600/25 transition-all hover:-translate-y-0.5 flex items-center space-x-2"
+                className="px-7 py-3.5 rounded-xl bg-[#8d1864] hover:bg-[#751352] text-white font-semibold text-sm shadow-xl shadow-[#8d1864]/30 transition-all hover:-translate-y-0.5 flex items-center space-x-2 cursor-pointer"
               >
                 <span>Catalogue Talents</span>
                 <ArrowRight className="w-4 h-4" />
@@ -116,13 +116,13 @@ export default function Hero({ darkMode, onExploreInfluencers, onStartCampaign }
 
               <button
                 onClick={onStartCampaign}
-                className={`px-7 py-3.5 rounded-xl font-semibold text-sm border transition-all hover:-translate-y-0.5 flex items-center space-x-2 ${
+                className={`px-7 py-3.5 rounded-xl font-semibold text-sm border transition-all hover:-translate-y-0.5 flex items-center space-x-2 cursor-pointer ${
                   darkMode
                     ? 'bg-white/10 hover:bg-white/15 text-white border-white/15'
-                    : 'bg-brand-50 hover:bg-brand-100 text-brand-700 border-brand-200'
+                    : 'bg-[#8d1864]/10 hover:bg-[#8d1864]/20 text-[#8d1864] border-[#8d1864]/30'
                 }`}
               >
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4 text-[#8d1864]" />
                 <span>Lancer un Brief</span>
               </button>
             </div>
@@ -135,7 +135,7 @@ export default function Hero({ darkMode, onExploreInfluencers, onStartCampaign }
                 { val: 'N°1',  label: 'Agence au Sénégal', highlight: true },
               ].map((c, i) => (
                 <div key={i}>
-                  <div className={`text-2xl sm:text-3xl font-display font-extrabold ${c.highlight ? 'text-brand-600' : textPrimary}`}>{c.val}</div>
+                  <div className={`text-2xl sm:text-3xl font-display font-extrabold ${c.highlight ? 'text-[#8d1864]' : textPrimary}`}>{c.val}</div>
                   <div className={`text-xs uppercase tracking-wider font-medium mt-0.5 ${counterLabel}`}>{c.label}</div>
                 </div>
               ))}
@@ -157,12 +157,12 @@ export default function Hero({ darkMode, onExploreInfluencers, onStartCampaign }
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
                     <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-[11px] font-medium text-white flex items-center space-x-1.5">
-                      <Award className="w-3.5 h-3.5 text-amber-400" />
+                      <Award className="w-3.5 h-3.5 text-[#8d1864]" />
                       <span>Label d'Excellence Dakar</span>
                     </div>
 
                     <div className="absolute bottom-4 left-4 right-4">
-                      <span className="text-[11px] uppercase tracking-wider font-semibold text-brand-400 block">Expertise Phare</span>
+                      <span className="text-[11px] uppercase tracking-wider font-semibold text-[#8d1864] block">Expertise Phare</span>
                       <h3 className="text-lg font-bold text-white leading-snug mt-1">{slides[current].title}</h3>
                       <p className="text-xs text-slate-300 mt-1 line-clamp-2">{slides[current].sub}</p>
 
@@ -170,7 +170,7 @@ export default function Hero({ darkMode, onExploreInfluencers, onStartCampaign }
                         <div className="flex space-x-1.5">
                           {slides.map((_, i) => (
                             <button key={i} onClick={() => setCurrent(i)}
-                              className={`h-1.5 rounded-full transition-all ${i === current ? 'w-6 bg-brand-500' : 'w-1.5 bg-white/30'}`}
+                              className={`h-1.5 rounded-full transition-all ${i === current ? 'w-6 bg-[#8d1864]' : 'w-1.5 bg-white/30'}`}
                             />
                           ))}
                         </div>
@@ -191,7 +191,7 @@ export default function Hero({ darkMode, onExploreInfluencers, onStartCampaign }
                       <ShieldCheck className="w-4 h-4 text-emerald-400" />
                       <span>Contrats sécurisés &amp; certifiés</span>
                     </div>
-                    <span className="text-amber-300 font-semibold">Membre FOBAF</span>
+                    <span className="text-[#8d1864] font-semibold">Membre FOBAF</span>
                   </div>
                 </div>
               </div>
@@ -204,7 +204,7 @@ export default function Hero({ darkMode, onExploreInfluencers, onStartCampaign }
               <div className="flex space-x-2">
                 {slides.map((_, i) => (
                   <button key={i} onClick={() => setCurrent(i)}
-                    className={`h-2 rounded-full transition-all ${i === current ? 'w-8 bg-brand-600' : 'w-2 bg-gray-200'}`}
+                    className={`h-2 rounded-full transition-all ${i === current ? 'w-8 bg-[#8d1864]' : 'w-2 bg-gray-200'}`}
                   />
                 ))}
               </div>

@@ -39,7 +39,7 @@ export default function Footer({ onNavigate, onOpenLegal, onOpenAdmin, darkMode 
                     onChange={e => setEmail(e.target.value)}
                     className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
                   />
-                  <button type="submit" className="p-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white transition-colors shadow-md">
+                  <button type="submit" className="p-2.5 rounded-xl bg-[#8d1864] hover:bg-[#751352] text-white transition-colors shadow-md cursor-pointer">
                     <Send className="w-4 h-4" />
                   </button>
                 </form>
@@ -160,7 +160,7 @@ export default function Footer({ onNavigate, onOpenLegal, onOpenAdmin, darkMode 
             {/* Admin button in footer — discret */}
             <button
               onClick={onOpenAdmin}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-amber-300 border border-white/8 hover:border-amber-500/30 transition-all text-[11px]"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-[#8d1864] border border-white/8 hover:border-[#8d1864]/40 transition-all text-[11px] cursor-pointer"
               title="Espace Administrateur"
             >
               <Lock className="w-3 h-3" />

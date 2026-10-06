@@ -106,8 +106,8 @@ export default function Navbar({ activePage, setActivePage, onOpenSearch, darkMo
               onClick={toggleDarkMode}
               className={`p-2 rounded-full transition-colors ${
                 darkMode
-                  ? 'text-amber-300 hover:bg-amber-300/10'
-                  : 'text-gray-500 hover:text-brand-600 hover:bg-brand-50'
+                  ? 'text-pink-300 hover:bg-pink-300/10'
+                  : 'text-gray-500 hover:text-[#8d1864] hover:bg-[#8d1864]/10'
               }`}
               title={darkMode ? 'Mode clair' : 'Mode sombre'}
             >
@@ -119,7 +119,7 @@ export default function Navbar({ activePage, setActivePage, onOpenSearch, darkMo
               href="https://api.whatsapp.com/send?phone=+221772619754&text=Bonjour%20SENINFLUENCEURS,%20je%20souhaite%20des%20renseignements."
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 px-4 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-lg shadow-brand-600/25 transition-all hover:-translate-y-0.5"
+              className="flex items-center space-x-2 px-4 py-2 rounded-full bg-[#8d1864] hover:bg-[#751352] text-white text-xs font-semibold shadow-lg shadow-[#8d1864]/25 transition-all hover:-translate-y-0.5"
             >
               <MessageCircle className="w-3.5 h-3.5 fill-white/20" />
               <span>WhatsApp Direct</span>
@@ -128,7 +128,7 @@ export default function Navbar({ activePage, setActivePage, onOpenSearch, darkMo
 
           {/* ——— MOBILE: Theme + Search + Hamburger ——— */}
           <div className="flex md:hidden items-center space-x-1">
-            <button onClick={toggleDarkMode} className={`p-2 rounded-full ${darkMode ? 'text-amber-300' : 'text-gray-500'}`}>
+            <button onClick={toggleDarkMode} className={`p-2 rounded-full ${darkMode ? 'text-pink-300' : 'text-gray-500'}`}>
               {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             <button onClick={onOpenSearch} className={`p-2 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>

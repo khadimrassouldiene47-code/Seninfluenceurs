@@ -46,10 +46,10 @@ export default function InfluencersCatalog({ influencers, onSelectInfluencer, da
   /* ── Style tokens ── */
   const sectionBg  = darkMode ? 'bg-[#090A0D]' : 'bg-white';
   const pillBg     = (active) => active
-    ? 'bg-brand-600 text-white shadow-sm'
+    ? 'bg-[#8d1864] text-white shadow-sm'
     : darkMode
       ? 'bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 border border-white/10 hover:border-white/20'
-      : 'bg-gray-100 hover:bg-brand-50 text-gray-600 hover:text-brand-700 border border-gray-200';
+      : 'bg-gray-100 hover:bg-pink-50 text-gray-600 hover:text-[#8d1864] border border-gray-200';
   const panelCls   = darkMode
     ? 'bg-white/[0.03] border-white/10'
     : 'bg-white border-gray-200 shadow-sm';
@@ -145,14 +145,14 @@ export default function InfluencersCatalog({ influencers, onSelectInfluencer, da
               <div className="mt-10 text-center flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
                   onClick={() => setVisibleCount(prev => prev + 30)}
-                  className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/20 transition-all hover:scale-105"
+                  className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-[#8d1864] hover:bg-[#751352] text-white text-xs font-bold shadow-md shadow-[#8d1864]/25 transition-all hover:scale-105 cursor-pointer"
                 >
                   <ChevronDown className="w-4 h-4" />
                   <span>Charger plus de créateurs ({filtered.length - visibleCount} restants)</span>
                 </button>
                 <button
                   onClick={() => setVisibleCount(filtered.length)}
-                  className={`px-4 py-3 rounded-xl text-xs font-medium border transition-colors ${
+                  className={`px-4 py-3 rounded-xl text-xs font-medium border transition-colors cursor-pointer ${
                     darkMode
                       ? 'border-white/10 hover:border-white/20 text-slate-300 hover:text-white bg-white/[0.04]'
                       : 'border-gray-200 hover:border-gray-300 text-gray-700 bg-gray-50'
@@ -170,7 +170,7 @@ export default function InfluencersCatalog({ influencers, onSelectInfluencer, da
             <p className={`text-xs max-w-md mx-auto mt-1 mb-5 ${mutedColor}`}>Essayez un autre mot-clé ou réinitialisez les filtres.</p>
             <button
               onClick={() => { setCategory("Tous"); setSearchQuery(""); }}
-              className="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold"
+              className="px-5 py-2.5 rounded-xl bg-[#8d1864] hover:bg-[#751352] text-white text-xs font-semibold cursor-pointer"
             >
               Réinitialiser les filtres
             </button>
@@ -179,10 +179,10 @@ export default function InfluencersCatalog({ influencers, onSelectInfluencer, da
 
         {/* Custom request CTA */}
         <div className={`mt-14 rounded-2xl p-6 sm:p-8 border flex flex-col md:flex-row items-center justify-between gap-6 ${
-          darkMode ? 'border-brand-600/20 bg-brand-950/30' : 'border-brand-200 bg-brand-50'
+          darkMode ? 'border-[#8d1864]/20 bg-[#8d1864]/10' : 'border-pink-200 bg-pink-50'
         }`}>
           <div>
-            <span className="text-xs font-semibold text-brand-600 uppercase tracking-widest block mb-1">Casting sur-mesure</span>
+            <span className="text-xs font-semibold text-[#8d1864] uppercase tracking-widest block mb-1">Casting sur-mesure</span>
             <h3 className={`text-xl sm:text-2xl font-display font-bold ${labelColor}`}>
               Besoin d'un profil spécifique pour votre campagne ?
             </h3>
@@ -193,7 +193,7 @@ export default function InfluencersCatalog({ influencers, onSelectInfluencer, da
           <a
             href="https://api.whatsapp.com/send?phone=+221772619754&text=Bonjour%20SENINFLUENCEURS,%20je%20recherche%20un%20profil%20d%27influenceur%20spécifique."
             target="_blank" rel="noopener noreferrer"
-            className="px-6 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm whitespace-nowrap shadow-lg shadow-brand-600/20 transition-all"
+            className="px-6 py-3.5 rounded-xl bg-[#8d1864] hover:bg-[#751352] text-white font-semibold text-xs sm:text-sm whitespace-nowrap shadow-lg shadow-[#8d1864]/25 transition-all"
           >
             Demander un Casting Privé
           </a>
