@@ -15,10 +15,11 @@ export default function Navbar({ activePage, setActivePage, onOpenSearch, darkMo
 
   const navItems = [
     { id: 'home',        label: 'Accueil' },
-    { id: 'influencers', label: 'Influenceurs', badge: '+300' },
+    { id: 'influencers', label: 'Influenceurs', badge: '180+' },
     { id: 'services',    label: 'Expertises & Studio' },
     { id: 'about',       label: "L'Agence" },
     { id: 'news',        label: 'Actualités' },
+    { id: 'join',        label: 'Rejoindre', badge: 'Talents' },
     { id: 'contact',     label: 'Lancer un Brief' },
   ];
 

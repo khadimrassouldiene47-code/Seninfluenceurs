@@ -1,75 +1,97 @@
 import React from 'react';
 import { 
-  Smartphone, Camera, Mic, Radio, Palette, Globe, 
-  Sparkles, CheckCircle, ArrowRight 
+  Smartphone, Camera, Radio, Sparkles, CheckCircle, ArrowRight,
+  Users, Video, Target, GraduationCap
 } from 'lucide-react';
 
 export default function ServicesSection({ onStartBrief, darkMode = true }) {
   const services = [
     {
       icon: Smartphone,
-      title: "Marketing d'Influence & Campagnes Digitales",
+      title: "Marketing d'Influence",
       desc: "Conception de campagnes d'influence sur-mesure. Nous sélectionnons les créateurs parfaits selon leur crédibilité, leur communauté et leur taux d'engagement réel.",
       features: [
-        "Casting de talents qualifiés",
-        "Négociation et encadrement contractuel",
+        "Casting de talents qualifiés & certifiés",
+        "Négociation & encadrement contractuel",
         "Suivi opérationnel et modération",
         "Reporting d'impact et calcul du ROI"
       ]
     },
     {
-      icon: Camera,
-      title: "SENINFLUENCEURS STUDIO & Production",
-      desc: "Studio créatif à Dakar dédié aux marques et créateurs : production audiovisuelle de niveau broadcast pour TikTok, Instagram Reels, YouTube et la télévision.",
+      icon: Users,
+      title: "Management de Talents",
+      desc: "Représentation exclusive et développement de carrière pour les créateurs de contenu, artistes et figures publiques au Sénégal et à l'international.",
       features: [
-        "Tournage photo & vidéo 4K professionnelle",
-        "Réalisation de Reels & Shorts viraux",
-        "Motion design, animations 2D/3D & graphisme",
-        "Location de studio équipé à Dakar"
+        "Gestion d'agenda & partenariats marques",
+        "Protection juridique & droits d'image",
+        "Stratégie de monétisation & diversification",
+        "Accompagnement médiatique personnalisé"
       ]
     },
     {
-      icon: Mic,
-      title: "Création de Podcasts & SENINFLUENCEURS TV",
-      desc: "Développement de formats talk-shows, capsules audio et émissions vidéo exclusives avec des personnalités, entrepreneurs et figures d'Afrique de l'Ouest.",
+      icon: Sparkles,
+      title: "Création de Contenu & Brand Content",
+      desc: "Storytelling de marque engageant et formats percutants conçus pour maximiser la rétention et la viralité sur TikTok, Instagram, YouTube et LinkedIn.",
       features: [
-        "Enregistrement audio multi-pistes haute fidélité",
-        "Captation vidéo multi-caméras studio",
-        "Diffusion omnicanale (Spotify, Apple, YouTube)",
-        "Sponsoring et intégration de marque premium"
+        "Stratégie éditoriale & calendriers de posts",
+        "Conception de Reels, TikToks & Shorts viraux",
+        "Copywriting créatif & scénarisation",
+        "Direction artistique sur-mesure"
+      ]
+    },
+    {
+      icon: Video,
+      title: "Production Vidéo & Audiovisuelle",
+      desc: "Tournage haute définition, réalisation publicitaire, spots corporate et capsules d'émissions de niveau broadcast professionnel.",
+      features: [
+        "Prises de vue 4K cinématographiques",
+        "Montage dynamique & étalonnage couleur",
+        "Motion design, effets 2D/3D & sous-titrage",
+        "Formats optimisés mobile & affichage LED"
+      ]
+    },
+    {
+      icon: Target,
+      title: "Campagnes Digitales 360°",
+      desc: "Déploiement omnicanal de vos lancements de produits et activations événementielles avec amplification média et reciblage publicitaire.",
+      features: [
+        "Stratégie multicanale & médiatisation",
+        "Sponsoring de publications & Ads meta/tiktok",
+        "Activation influenceurs en temps réel",
+        "Tableaux de bord analytiques en direct"
       ]
     },
     {
       icon: Radio,
-      title: "Couverture Médiatique & Relations Presse",
-      desc: "Visibilité stratégique amplifiée par notre média SN MAGAZINE et nos partenaires audiovisuels de premier plan (2sTV, TFM, RFM, Record, L'Observateur).",
+      title: "Couverture Média & Relations Presse",
+      desc: "Visibilité stratégique amplifiée par notre média SN MAGAZINE et nos partenaires audiovisuels de premier plan (Canal+ Afrique, 2sTV, TFM, RFM).",
       features: [
         "Relations presse et communiqués institutionnels",
-        "Organisation d'interviews et d'articles de presse",
+        "Organisation d'interviews et tribunes média",
         "Couverture médiatique d'inaugurations et galas",
-        "Campagnes sur panneaux publicitaires à Dakar"
+        "Diffusion multicanale & revues de presse"
       ]
     },
     {
-      icon: Palette,
-      title: "Identité Visuelle & Stratégie de Marque",
-      desc: "Création de chartes graphiques percutantes, direction artistique et déclinaison de supports de communication modernes pour asseoir votre leadership.",
+      icon: Camera,
+      title: "SENINFLUENCEURS STUDIO",
+      desc: "Plateau de tournage professionnel équipé à Dakar (Immeuble Fahd) pour vos shootings, tournages vidéo, podcasts et lives streams.",
       features: [
-        "Logotype et design system digital",
-        "Conception de sites web & plateformes de marque",
-        "Supports print, packaging & merchandising",
-        "Stratégie de positionnement de marque"
+        "Plateau insonorisé avec régie technique",
+        "Caméras Sony cinéma & éclairage Aputure",
+        "Microphones podcast Shure SM7B",
+        "Location à l'heure ou à la journée"
       ]
     },
     {
-      icon: Globe,
-      title: "Réseau International & Label FOBAF",
-      desc: "Membre actif de la Fédération des Organisations de Blogueurs d'Afrique Francophone (FOBAF) pour le développement et la structuration du digital africain.",
+      icon: GraduationCap,
+      title: "Formation & Coaching Influence",
+      desc: "Programmes intensifs et masterclasses pour former les talents de demain, professionnaliser les community managers et acculturer les marques.",
       features: [
-        "Rayonnement panafricain (Sénégal, Côte d'Ivoire, etc.)",
-        "Adhésion aux standards éthiques internationaux",
-        "Participation aux sommets du digital africain",
-        "Connexion avec les délégations de la diaspora"
+        "Masterclasses création de contenu & algorithmes",
+        "Coaching prise de parole face caméra",
+        "Ateliers monétisation & relations marques",
+        "Certifications et accompagnement individuel"
       ]
     }
   ];
@@ -103,7 +125,7 @@ export default function ServicesSection({ onStartBrief, darkMode = true }) {
         </div>
 
         {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((srv, idx) => {
             const Icon = srv.icon;
             return (

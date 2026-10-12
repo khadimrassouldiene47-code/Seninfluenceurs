@@ -23,7 +23,8 @@ export default function GlobalSearchModal({ isOpen, onClose, onSelectInfluencer,
     ? defaultInfluencers.filter(
         (i) =>
           i.name.toLowerCase().includes(query.toLowerCase()) ||
-          i.niche.toLowerCase().includes(query.toLowerCase())
+          i.niche.toLowerCase().includes(query.toLowerCase()) ||
+          (i.category && i.category.toLowerCase().includes(query.toLowerCase()))
       ).slice(0, 6)
     : defaultInfluencers.slice(0, 4);
 

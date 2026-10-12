@@ -356,7 +356,7 @@ export default function ContactSection({ darkMode = true }) {
                       )}
                     </button>
                     <p className={`text-[11px] text-center mt-2.5 ${mutedColor}`}>
-                      🔒 Données strictement confidentielles, protégées conformément aux normes RGPD.
+                      🔒 Données strictement confidentielles, protégées selon la Loi sénégalaise n° 2008-12 (CDP) et le RGPD.
                     </p>
                   </div>
 

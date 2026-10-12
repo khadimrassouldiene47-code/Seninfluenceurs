@@ -18,7 +18,7 @@ export default function LegalModal({ isOpen, onClose, type = 'cgu' }) {
               <ShieldCheck className="w-5 h-5 text-emerald-400" />
             )}
             <h3 className="text-base sm:text-lg font-bold text-white font-display">
-              {type === 'cgu' ? 'Conditions Générales d’Utilisation (CGU)' : 'Politique de Confidentialité & RGPD'}
+              {type === 'cgu' ? 'Conditions Générales d’Utilisation (CGU)' : 'Politique de Confidentialité — Données Personnelles (CDP & RGPD)'}
             </h3>
           </div>
           <button
@@ -61,12 +61,12 @@ export default function LegalModal({ isOpen, onClose, type = 'cgu' }) {
 
               <h4 className="font-bold text-white text-sm">2. Sécurité et Hébergement</h4>
               <p>
-                Vos données sont stockées de façon sécurisée sur une infrastructure Supabase (hébergée en Union Européenne, région eu-west-1) répondant aux normes strictes de conformité RGPD et ISO 27001. Aucune donnée n'est vendue ni cédée à des tiers.
+                Vos données sont stockées de façon sécurisée sur une infrastructure Supabase répondant aux normes de conformité ISO 27001. Aucune donnée n'est vendue ni cédée à des tiers. Le traitement de vos données personnelles est conforme à la <strong className="text-white">Loi sénégalaise n° 2008-12 du 25 janvier 2008 sur la Protection des Données à Caractère Personnel</strong> et au Règlement Général sur la Protection des Données (RGPD/UE 2016/679).
               </p>
 
-              <h4 className="font-bold text-white text-sm">3. Vos Droits d'Accès et de Rectification</h4>
+              <h4 className="font-bold text-white text-sm">3. Vos Droits — CDP &amp; RGPD</h4>
               <p>
-                Conformément à la législation sénégalaise sur la protection des données personnelles (CDP) et au RGPD, vous disposez d'un droit d'accès, de rectification et d'effacement de vos données personnelles par simple email adressé à : info@seninfluenceurs.com.
+                Conformément à la <strong className="text-white">Loi sénégalaise n° 2008-12</strong> sur la Protection des Données à Caractère Personnel, sous l'autorité de la <strong className="text-white">CDP (Commission des Données Personnelles du Sénégal)</strong>, ainsi qu'au RGPD européen, vous disposez d'un droit d'accès, de rectification, d'opposition et d'effacement de vos données personnelles. Pour exercer ces droits, adressez un email à : <strong className="text-white">info@seninfluenceurs.com</strong>.
               </p>
             </>
           )}

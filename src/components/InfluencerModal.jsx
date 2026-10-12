@@ -85,27 +85,56 @@ export default function InfluencerModal({ influencer, onClose, darkMode }) {
                 </div>
               </div>
 
-              {/* Stats Box */}
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <div className={`p-3 rounded-xl text-center border ${darkMode ? 'bg-white/[0.04] border-white/10' : 'bg-white border-gray-200 shadow-sm'}`}>
-                  <span className={`text-[11px] block font-medium ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>Communauté</span>
-                  <span className={`text-lg font-extrabold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{influencer.followers}</span>
+              {/* Stats Box: Conditional based on showFollowers or brief request */}
+              {influencer.showFollowers && influencer.followers ? (
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <div className={`p-3 rounded-xl text-center border ${darkMode ? 'bg-white/[0.04] border-white/10' : 'bg-white border-gray-200 shadow-sm'}`}>
+                    <span className={`text-[11px] block font-medium ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>Communauté</span>
+                    <span className={`text-lg font-extrabold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{influencer.followers}</span>
+                  </div>
+                  <div className={`p-3 rounded-xl text-center border ${darkMode ? 'bg-white/[0.04] border-white/10' : 'bg-white border-gray-200 shadow-sm'}`}>
+                    <span className={`text-[11px] block font-medium ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>Engagement</span>
+                    <span className="text-lg font-extrabold text-emerald-500">{influencer.engagementRate || '7.8%'}</span>
+                  </div>
                 </div>
-                <div className={`p-3 rounded-xl text-center border ${darkMode ? 'bg-white/[0.04] border-white/10' : 'bg-white border-gray-200 shadow-sm'}`}>
-                  <span className={`text-[11px] block font-medium ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>Engagement</span>
-                  <span className="text-lg font-extrabold text-emerald-500">{influencer.engagementRate || '7.8%'}</span>
+              ) : (
+                <div className={`mt-4 p-3 rounded-xl border text-center ${darkMode ? 'bg-white/[0.03] border-white/10' : 'bg-white border-gray-200 shadow-sm'}`}>
+                  <span className={`text-xs block font-semibold ${darkMode ? 'text-slate-200' : 'text-gray-700'}`}>
+                    📊 Kit Média &amp; Statistiques Certifiées
+                  </span>
+                  <span className={`text-[11px] mt-0.5 block ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                    Fournies sur mesure selon votre brief de campagne
+                  </span>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Social channels bar */}
+            {/* Social channels bar with real clickable links */}
             <div className={`mt-6 pt-4 border-t ${darkMode ? 'border-white/10' : 'border-gray-200'}`}>
-              <span className={`text-[11px] uppercase tracking-wider font-semibold block mb-2 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+              <span className={`text-[11px] uppercase tracking-wider font-semibold block mb-2.5 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                 Plateformes actives
               </span>
               <div className="flex flex-wrap gap-2">
-                {['TikTok','Instagram','Facebook'].map(p => (
-                  <span key={p} className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${darkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-gray-100 border-gray-200 text-gray-700'}`}>{p}</span>
+                {[
+                  { name: 'TikTok', url: influencer.socials?.tiktok || (influencer.name ? `https://tiktok.com/@${influencer.name.toLowerCase().replace(/[^a-z0-9]/g, '')}` : null) },
+                  { name: 'Instagram', url: influencer.socials?.instagram || (influencer.name ? `https://instagram.com/${influencer.name.toLowerCase().replace(/[^a-z0-9]/g, '')}` : null) },
+                  { name: 'YouTube', url: influencer.socials?.youtube },
+                  { name: 'Facebook', url: influencer.socials?.facebook }
+                ].filter(p => p.url && p.url !== 'https://facebook.com').map(p => (
+                  <a
+                    key={p.name}
+                    href={p.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center space-x-1.5 transition-all hover:scale-105 cursor-pointer ${
+                      darkMode
+                        ? 'bg-white/5 hover:bg-white/12 text-slate-200 border-white/10'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-200'
+                    }`}
+                  >
+                    <span>{p.name}</span>
+                    <ExternalLink className="w-3 h-3 text-[#8d1864]" />
+                  </a>
                 ))}
               </div>
             </div>

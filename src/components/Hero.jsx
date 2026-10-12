@@ -101,7 +101,7 @@ export default function Hero({ darkMode, onExploreInfluencers, onStartCampaign }
             {/* Sub */}
             <p className={`text-base sm:text-lg font-light leading-relaxed mb-8 max-w-2xl ${textSecondary}`}>
               Pionniers du marketing d'influence à Dakar, nous concevons des campagnes créatives à fort impact avec plus de{' '}
-              <strong className={darkMode ? 'text-white font-semibold' : 'text-gray-900 font-semibold'}>300 créateurs de contenus</strong> d'élite.
+              <strong className={darkMode ? 'text-white font-semibold' : 'text-gray-900 font-semibold'}>180 profils exclusifs au catalogue</strong> et plus de 300 talents activés en Afrique de l'Ouest.
             </p>
 
             {/* CTAs */}
@@ -130,16 +130,20 @@ export default function Hero({ darkMode, onExploreInfluencers, onStartCampaign }
             {/* Counters */}
             <div className={`grid grid-cols-3 gap-6 pt-10 mt-10 border-t ${dividerBorder}`}>
               {[
-                { val: '+300', label: 'Talents accompagnés' },
-                { val: '+50M', label: "Portée d'audience" },
-                { val: 'N°1',  label: 'Agence au Sénégal', highlight: true },
+                { val: '180+', label: 'Profils au catalogue', hint: '181 profils vérifiés' },
+                { val: '+50M', label: "Portée cumulée", hint: 'Réseaux activés' },
+                { val: 'N°1',  label: 'Agence Dakar', highlight: true, hint: 'Fondée en 2018' },
               ].map((c, i) => (
                 <div key={i}>
                   <div className={`text-2xl sm:text-3xl font-display font-extrabold ${c.highlight ? 'text-[#8d1864]' : textPrimary}`}>{c.val}</div>
-                  <div className={`text-xs uppercase tracking-wider font-medium mt-0.5 ${counterLabel}`}>{c.label}</div>
+                  <div className={`text-xs uppercase tracking-wider font-semibold mt-0.5 ${counterLabel}`}>{c.label}</div>
+                  <div className={`text-[10px] mt-0.5 ${darkMode ? 'text-slate-500' : 'text-gray-400'}`}>{c.hint}</div>
                 </div>
               ))}
             </div>
+            <p className={`text-[10px] mt-3 italic ${darkMode ? 'text-slate-500' : 'text-gray-400'}`}>
+              * Référence documentaire Canal+ Afrique • Membre certifié FOBAF • Campagnes mesurées 2018–2026.
+            </p>
           </div>
 
           {/* ——— RIGHT CARD — visible on dark or hidden (light uses full right image) ——— */}

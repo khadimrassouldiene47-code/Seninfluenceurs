@@ -8,6 +8,8 @@ import AboutSection      from './components/AboutSection';
 import NewsSection       from './components/NewsSection';
 import ContactSection    from './components/ContactSection';
 import FAQSection        from './components/FAQSection';
+import ReviewsSection    from './components/ReviewsSection';
+import JoinSection       from './components/JoinSection';
 import Footer            from './components/Footer';
 import InfluencerModal   from './components/InfluencerModal';
 import AdminDashboard    from './components/AdminDashboard';
@@ -19,7 +21,18 @@ import { fetchInfluencers } from './lib/supabase';
 import { defaultInfluencers } from './data/influencers';
 
 export default function App() {
-  const [activePage,          setActivePage]         = useState('home');
+  const [activePage,          setActivePage]         = useState(() => {
+    if (typeof window !== 'undefined') {
+      const p = window.location.pathname;
+      if (p.includes('/news')) return 'news';
+      if (p.includes('/rejoindre') || p.includes('/join')) return 'join';
+      if (p.includes('/services')) return 'services';
+      if (p.includes('/about')) return 'about';
+      if (p.includes('/contact')) return 'contact';
+      if (p.includes('/influencers')) return 'influencers';
+    }
+    return 'home';
+  });
   const [influencers,         setInfluencers]        = useState(defaultInfluencers);
   const [selectedInfluencer,  setSelectedInfluencer] = useState(null);
   const [isAdminOpen,         setIsAdminOpen]        = useState(false);
@@ -121,7 +134,9 @@ export default function App() {
             />
             <ServicesSection onStartBrief={() => go('contact')} darkMode={darkMode} />
             <AboutSection darkMode={darkMode} />
+            <ReviewsSection darkMode={darkMode} />
             <NewsSection darkMode={darkMode} />
+            <JoinSection darkMode={darkMode} />
             <FAQSection darkMode={darkMode} />
             <ContactSection darkMode={darkMode} />
           </>
@@ -147,12 +162,19 @@ export default function App() {
           <div className="pt-20">
             <AboutSection darkMode={darkMode} />
             <PartnersMarquee darkMode={darkMode} />
+            <ReviewsSection darkMode={darkMode} />
           </div>
         )}
 
         {activePage === 'news' && (
           <div className="pt-20">
-            <NewsSection darkMode={darkMode} />
+            <NewsSection darkMode={darkMode} fullPage={true} />
+          </div>
+        )}
+
+        {activePage === 'join' && (
+          <div className="pt-20">
+            <JoinSection darkMode={darkMode} />
           </div>
         )}
 

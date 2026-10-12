@@ -115,10 +115,11 @@ export default function Footer({ onNavigate, onOpenLegal, onOpenAdmin, darkMode 
             <ul className="space-y-2.5">
               {[
                 ['home',        'Accueil'],
-                ['influencers', 'Influenceurs (+300)'],
+                ['influencers', 'Influenceurs (180+)'],
                 ['services',    'Expertises & Studio'],
                 ['about',       'L\'Agence'],
                 ['news',        'Actualités'],
+                ['join',        'Rejoindre l\'Écurie'],
                 ['contact',     'Lancer un Brief'],
               ].map(([id, label]) => (
                 <li key={id}>
@@ -172,7 +173,7 @@ export default function Footer({ onNavigate, onOpenLegal, onOpenAdmin, darkMode 
           <div className="flex items-center flex-wrap gap-3 text-[11px]">
             <button onClick={() => onOpenLegal('cgu')} className={hover}>CGU</button>
             <span className="text-gray-600">•</span>
-            <button onClick={() => onOpenLegal('privacy')} className={hover}>RGPD / Confidentialité</button>
+            <button onClick={() => onOpenLegal('privacy')} className={hover}>Données Personnelles & CDP</button>
             <span className="text-gray-600">•</span>
 
             {/* Admin button in footer — discret */}

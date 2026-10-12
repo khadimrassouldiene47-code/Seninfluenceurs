@@ -9,6 +9,38 @@ export default function InfluencersCatalog({ influencers, onSelectInfluencer, da
   const [sortBy,       setSortBy]       = useState("followers");
   const [visibleCount, setVisibleCount] = useState(30);
 
+  // Dynamic categories synced with Admin
+  const [activeCategories, setActiveCategories] = useState(() => {
+    try {
+      const stored = localStorage.getItem('seninfluenceurs_categories');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return ["Tous", ...parsed];
+      }
+    } catch {}
+    return influencerCategories;
+  });
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      try {
+        const stored = localStorage.getItem('seninfluenceurs_categories');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setActiveCategories(["Tous", ...parsed]);
+          }
+        }
+      } catch {}
+    };
+    window.addEventListener('categories-updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('categories-updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
   // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(30);
@@ -18,12 +50,11 @@ export default function InfluencersCatalog({ influencers, onSelectInfluencer, da
     return influencers
       .filter(item => {
         let matchCat = true;
-        if (category === "Top Influenceurs") {
-          matchCat = item.category === "Top Influenceurs" || item.category === "Macro-influenceur" || item.featured;
-        } else if (category === "Créateurs de contenu") {
-          matchCat = item.category === "Créateurs de contenu" || item.category === "Micro-influenceur";
-        } else if (category !== "Tous") {
-          matchCat = item.niche.toLowerCase().includes(category.toLowerCase());
+        if (category !== "Tous") {
+          const catNorm = category.toLowerCase().trim();
+          const itemCat = (item.category || '').toLowerCase().trim();
+          const itemNiche = (item.niche || '').toLowerCase().trim();
+          matchCat = itemCat === catNorm || itemCat.includes(catNorm) || itemNiche.includes(catNorm);
         }
 
         let matchQ = true;
@@ -119,7 +150,7 @@ export default function InfluencersCatalog({ influencers, onSelectInfluencer, da
 
           {/* Category pills */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-1 -mb-1">
-            {influencerCategories.map(cat => (
+            {activeCategories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}

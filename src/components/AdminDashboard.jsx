@@ -3,13 +3,15 @@ import {
   Lock, X, Plus, Trash2, Edit3, Save, Upload, CheckCircle2,
   Users, MessageSquare, Database, RefreshCw, Search, Eye, EyeOff,
   Newspaper, BarChart3, TrendingUp, Globe, Star, Activity,
-  Sparkles, AlertCircle, Facebook, Instagram, Youtube, Twitter
+  Sparkles, AlertCircle, Facebook, Instagram, Youtube, Twitter,
+  Layers, Tag
 } from 'lucide-react';
 import {
   fetchInfluencers, addInfluencer, updateInfluencer,
   deleteInfluencer, fetchContacts, seedSupabaseInfluencers
 } from '../lib/supabase';
 import { defaultArticles } from '../data/news';
+import ConfirmationModal from './ConfirmationModal';
 
 // ── Simulated site statistics (replace with real analytics later) ──
 const STATS_SEED = {
@@ -30,13 +32,14 @@ const STATS_SEED = {
 };
 
 const ADMIN_PASSWORD = 'sen2026';
+const DEFAULT_CATEGORIES = ["Top influenceurs", "Influenceurs", "Artistes", "Diaspora"];
 
 export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
   const [authed, setAuthed]         = useState(false);
   const [pwd, setPwd]               = useState('');
   const [showPwd, setShowPwd]       = useState(false);
   const [pwdError, setPwdError]     = useState('');
-  const [tab, setTab]               = useState('stats'); // stats | talents | contacts | news | database
+  const [tab, setTab]               = useState('stats'); // stats | talents | categories | contacts | news | database
 
   // Data
   const [talents, setTalents]       = useState([]);
@@ -45,13 +48,60 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
   const [loading, setLoading]       = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Categories CRUD
+  const [categoriesList, setCategoriesList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('seninfluenceurs_categories');
+      return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
+    } catch {
+      return DEFAULT_CATEGORIES;
+    }
+  });
+  const [newCatInput, setNewCatInput] = useState('');
+  const [editingCat, setEditingCat]   = useState(null); // { original: '', current: '' }
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('seninfluenceurs_categories', JSON.stringify(categoriesList));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('categories-updated'));
+      }
+    } catch {}
+  }, [categoriesList]);
+
+  // Confirmation Modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmLabel: 'Oui, confirmer',
+    cancelLabel: 'Non, annuler',
+    isDanger: true,
+    onConfirm: () => {}
+  });
+
+  const requestConfirmation = ({ title, message, confirmLabel, cancelLabel, isDanger = true, onConfirm }) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      confirmLabel: confirmLabel || 'Oui, confirmer',
+      cancelLabel: cancelLabel || 'Non, annuler',
+      isDanger,
+      onConfirm: () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        if (onConfirm) onConfirm();
+      }
+    });
+  };
+
   // Influencer form
   const [showForm, setShowForm]     = useState(false);
   const [editingId, setEditingId]   = useState(null);
   const blankForm = {
-    name: '', category: 'Top Influenceurs', niche: 'Humour & Comédie',
+    name: '', category: 'Top influenceurs', niche: 'Humour & Comédie',
     followers: '500K', followersCount: 500000, photo: '',
-    verified: true, featured: false, engagementRate: '8.5%', bio: '',
+    verified: true, featured: false, showFollowers: false, engagementRate: '8.5%', bio: '',
     socials: { tiktok: '', instagram: '', facebook: '', youtube: '', snapchat: '', linkedin: '' }
   };
   const [form, setForm]             = useState(blankForm);
@@ -108,6 +158,7 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
       name: t.name, category: t.category, niche: t.niche,
       followers: t.followers, followersCount: t.followersCount || 0,
       photo: t.photo, verified: t.verified, featured: t.featured,
+      showFollowers: t.showFollowers || false,
       engagementRate: t.engagementRate, bio: t.bio,
       socials: t.socials || { tiktok: '', instagram: '', facebook: '', youtube: '', snapchat: '', linkedin: '' }
     });
@@ -115,13 +166,20 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
     setTab('talents');
   };
 
-  const deleteTalent = async (id, name) => {
-    if (!window.confirm(`Supprimer "${name}" ?`)) return;
-    setLoading(true);
-    await deleteInfluencer(id);
-    await loadData();
-    if (onRefreshCatalog) onRefreshCatalog();
-    setLoading(false);
+  const deleteTalent = (id, name) => {
+    requestConfirmation({
+      title: `Supprimer "${name}" ?`,
+      message: `Êtes-vous certain de vouloir supprimer le profil de ${name} du catalogue ? Cette action est irréversible.`,
+      confirmLabel: 'Oui, supprimer le profil',
+      isDanger: true,
+      onConfirm: async () => {
+        setLoading(true);
+        await deleteInfluencer(id);
+        await loadData();
+        if (onRefreshCatalog) onRefreshCatalog();
+        setLoading(false);
+      }
+    });
   };
 
   const uploadPhoto = (e) => {
@@ -130,6 +188,55 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
     const reader = new FileReader();
     reader.onloadend = () => setForm(p => ({ ...p, photo: reader.result }));
     reader.readAsDataURL(file);
+  };
+
+  // ── Categories CRUD handlers ──
+  const handleAddCategory = (e) => {
+    e.preventDefault();
+    const trimmed = newCatInput.trim();
+    if (!trimmed) return;
+    if (categoriesList.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
+      alert('Cette catégorie existe déjà.');
+      return;
+    }
+    setCategoriesList([...categoriesList, trimmed]);
+    setNewCatInput('');
+  };
+
+  const handleStartRenameCategory = (cat) => {
+    setEditingCat({ original: cat, current: cat });
+  };
+
+  const handleSaveRenameCategory = () => {
+    if (!editingCat || !editingCat.current.trim()) {
+      setEditingCat(null);
+      return;
+    }
+    const newName = editingCat.current.trim();
+    const oldName = editingCat.original;
+    if (newName === oldName) {
+      setEditingCat(null);
+      return;
+    }
+    setCategoriesList(prev => prev.map(c => c === oldName ? newName : c));
+    // Optionally update local talents in this category
+    setTalents(prev => prev.map(t => t.category === oldName ? { ...t, category: newName } : t));
+    setEditingCat(null);
+  };
+
+  const handleDeleteCategory = (catToDelete) => {
+    const count = talents.filter(t => (t.category || '').toLowerCase() === catToDelete.toLowerCase()).length;
+    requestConfirmation({
+      title: `Supprimer la catégorie "${catToDelete}" ?`,
+      message: count > 0
+        ? `Attention : ${count} talent(s) sont actuellement assignés à cette catégorie. Si vous la supprimez, ils perdront cette classification.`
+        : `Êtes-vous certain de vouloir supprimer définitivement la catégorie "${catToDelete}" ?`,
+      confirmLabel: 'Oui, supprimer la catégorie',
+      isDanger: true,
+      onConfirm: () => {
+        setCategoriesList(prev => prev.filter(c => c !== catToDelete));
+      }
+    });
   };
 
   // ── Articles ──
@@ -155,8 +262,15 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
   };
 
   const deleteArticle = (id, title) => {
-    if (!window.confirm(`Supprimer l'article "${title}" ?`)) return;
-    setArticles(prev => prev.filter(a => a.id !== id));
+    requestConfirmation({
+      title: `Supprimer cet article ?`,
+      message: `Êtes-vous certain de vouloir supprimer l'article "${title}" ? Les liens existants risquent de ne plus fonctionner.`,
+      confirmLabel: 'Oui, supprimer l\'article',
+      isDanger: true,
+      onConfirm: () => {
+        setArticles(prev => prev.filter(a => a.id !== id));
+      }
+    });
   };
 
   if (!isOpen) return null;
@@ -241,6 +355,9 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
               </button>
               <button className={tabBtn('talents')} onClick={() => setTab('talents')}>
                 <Users className="w-3.5 h-3.5" /><span>Influenceurs ({talents.length})</span>
+              </button>
+              <button className={tabBtn('categories')} onClick={() => setTab('categories')}>
+                <Layers className="w-3.5 h-3.5" /><span>Catégories ({categoriesList.length})</span>
               </button>
               <button className={tabBtn('contacts')} onClick={() => setTab('contacts')}>
                 <MessageSquare className="w-3.5 h-3.5" /><span>Briefs ({contacts.length})</span>
@@ -361,8 +478,9 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
                           <label className={labelCls}>Catégorie</label>
                           <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
                             className={inputCls + ' bg-[#14172A]'}>
-                            <option value="Top Influenceurs">Top Influenceur (+500K)</option>
-                            <option value="Créateurs de contenu">Créateur de contenu (&lt;500K)</option>
+                            {categoriesList.map(cat => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
                           </select>
                         </div>
                         <div>
@@ -445,7 +563,7 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
                       </div>
 
                       {/* Options */}
-                      <div className="flex items-center space-x-5 text-xs text-slate-300">
+                      <div className="flex flex-wrap items-center gap-5 text-xs text-slate-300">
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input type="checkbox" checked={form.verified} onChange={e => setForm(p => ({ ...p, verified: e.target.checked }))} className="accent-brand-600" />
                           <span>Certifié</span>
@@ -453,6 +571,10 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input type="checkbox" checked={form.featured} onChange={e => setForm(p => ({ ...p, featured: e.target.checked }))} className="accent-brand-600" />
                           <span>En Vedette</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input type="checkbox" checked={form.showFollowers} onChange={e => setForm(p => ({ ...p, showFollowers: e.target.checked }))} className="accent-brand-600" />
+                          <span>Afficher le nombre d'abonnés sur la carte publique</span>
                         </label>
                       </div>
 
@@ -526,6 +648,119 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
                         </tbody>
                       </table>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ══════ CATEGORIES TAB ══════ */}
+              {tab === 'categories' && (
+                <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-sm font-bold text-white flex items-center space-x-2">
+                        <Layers className="w-4 h-4 text-brand-400" />
+                        <span>Gestion des Catégories</span>
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Créez, modifiez ou supprimez les catégories du catalogue. Une confirmation est requise avant toute suppression.
+                      </p>
+                    </div>
+
+                    {/* Add category form */}
+                    <form onSubmit={handleAddCategory} className="flex items-center gap-2 w-full sm:w-auto">
+                      <input
+                        type="text"
+                        placeholder="Nouvelle catégorie..."
+                        value={newCatInput}
+                        onChange={e => setNewCatInput(e.target.value)}
+                        className={inputCls + ' !w-auto min-w-[200px]'}
+                      />
+                      <button
+                        type="submit"
+                        className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold flex items-center space-x-1.5 shrink-0 shadow-md cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Ajouter</span>
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Categories list */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {categoriesList.map(cat => {
+                      const talentCount = talents.filter(t => (t.category || '').toLowerCase() === cat.toLowerCase()).length;
+                      const isEditing = editingCat && editingCat.original === cat;
+
+                      return (
+                        <div
+                          key={cat}
+                          className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between"
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-3">
+                            {isEditing ? (
+                              <div className="flex items-center gap-1.5 flex-1">
+                                <input
+                                  type="text"
+                                  value={editingCat.current}
+                                  onChange={e => setEditingCat(prev => ({ ...prev, current: e.target.value }))}
+                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white/10 border border-brand-500 text-xs text-white focus:outline-none"
+                                  autoFocus
+                                />
+                                <button
+                                  type="button"
+                                  onClick={handleSaveRenameCategory}
+                                  className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer"
+                                  title="Sauvegarder"
+                                >
+                                  <Save className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingCat(null)}
+                                  className="p-1.5 rounded-lg bg-white/10 text-slate-300 hover:text-white cursor-pointer"
+                                  title="Annuler"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center space-x-2">
+                                <Tag className="w-4 h-4 text-brand-400 shrink-0" />
+                                <span className="font-bold text-white text-sm">{cat}</span>
+                              </div>
+                            )}
+
+                            {!isEditing && (
+                              <div className="flex items-center space-x-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartRenameCategory(cat)}
+                                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white cursor-pointer"
+                                  title="Renommer la catégorie"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCategory(cat)}
+                                  className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 cursor-pointer"
+                                  title="Supprimer la catégorie"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs pt-2 border-t border-white/5">
+                            <span className="text-slate-400">Talents assignés :</span>
+                            <span className="px-2.5 py-0.5 rounded-full bg-brand-500/15 text-brand-300 font-semibold text-[11px]">
+                              {talentCount} profil(s)
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -697,6 +932,18 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
             </div>
           </div>
         )}
+
+        {/* ── Dangerous Action Confirmation Dialog ── */}
+        <ConfirmationModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          confirmLabel={confirmModal.confirmLabel}
+          cancelLabel={confirmModal.cancelLabel}
+          isDanger={confirmModal.isDanger}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        />
       </div>
     </div>
   );
