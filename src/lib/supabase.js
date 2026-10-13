@@ -2,18 +2,56 @@ import { createClient } from '@supabase/supabase-js';
 import { defaultInfluencers } from '../data/influencers';
 import { defaultArticles } from '../data/news';
 
-const SUPABASE_URL = 'https://jvkrryakllbxplsynwpt.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_uhIi8GlyGIC7VuFeKgaDbg_xw4JvZM1';
+const DEFAULT_SUPABASE_URL = 'https://jvkrryakllbxplsynwpt.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_uhIi8GlyGIC7VuFeKgaDbg_xw4JvZM1';
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Allow overriding via localStorage if user configures a new project in Admin
+export function getSupabaseCredentials() {
+  if (typeof window !== 'undefined') {
+    const customUrl = localStorage.getItem('seninfluenceurs_supabase_url');
+    const customKey = localStorage.getItem('seninfluenceurs_supabase_key');
+    if (customUrl && customKey) {
+      return { url: customUrl, key: customKey };
+    }
+  }
+  return {
+    url: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || DEFAULT_SUPABASE_URL,
+    key: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) || DEFAULT_SUPABASE_ANON_KEY
+  };
+}
 
-const INFLUENCERS_STORAGE_KEY = 'seninfluenceurs_talents_v3';
+const creds = getSupabaseCredentials();
+export let supabase = createClient(creds.url, creds.key);
+
+export function reinitSupabaseClient(url, key) {
+  if (typeof window !== 'undefined') {
+    if (url && key) {
+      localStorage.setItem('seninfluenceurs_supabase_url', url);
+      localStorage.setItem('seninfluenceurs_supabase_key', key);
+    } else {
+      localStorage.removeItem('seninfluenceurs_supabase_url');
+      localStorage.removeItem('seninfluenceurs_supabase_key');
+    }
+  }
+  const activeCreds = getSupabaseCredentials();
+  supabase = createClient(activeCreds.url, activeCreds.key);
+  return supabase;
+}
+
+const INFLUENCERS_STORAGE_KEY = 'seninfluenceurs_talents_v4';
 const CONTACTS_STORAGE_KEY = 'seninfluenceurs_contacts_v1';
 const ARTICLES_STORAGE_KEY = 'seninfluenceurs_articles_v1';
 
 // Initialize local storage seeds if not already present
 export function initLocalStorageSeeds() {
   if (typeof window === 'undefined') return;
+  // Cleanup old v1/v2/v3 caches to avoid showing 180 old talents
+  try {
+    localStorage.removeItem('seninfluenceurs_talents_v1');
+    localStorage.removeItem('seninfluenceurs_talents_v2');
+    localStorage.removeItem('seninfluenceurs_talents_v3');
+  } catch {}
+
   if (!localStorage.getItem(INFLUENCERS_STORAGE_KEY)) {
     localStorage.setItem(INFLUENCERS_STORAGE_KEY, JSON.stringify(defaultInfluencers));
   }
@@ -69,11 +107,11 @@ export async function fetchInfluencers() {
 
 // Create or Add Influencer
 export async function addInfluencer(influencer) {
-  const newId = Date.now().toString();
-  const newItem = {
-    id: newId,
+  const localTempId = Date.now().toString();
+  let newItem = {
+    id: localTempId,
     name: influencer.name,
-    category: influencer.category || 'Micro-influenceur',
+    category: influencer.category || 'Influenceurs',
     niche: influencer.niche || 'Lifestyle',
     followers: influencer.followers || '100K',
     followersCount: parseInt(influencer.followersCount, 10) || 100000,
@@ -85,14 +123,9 @@ export async function addInfluencer(influencer) {
     socials: influencer.socials || {}
   };
 
-  // 1. Save in local cache immediately
-  const existing = await fetchInfluencers();
-  const updated = [newItem, ...existing];
-  localStorage.setItem(INFLUENCERS_STORAGE_KEY, JSON.stringify(updated));
-
-  // 2. Attempt save in Supabase
+  // Attempt save in Supabase first to get real generated ID
   try {
-    await supabase.from('influencers').insert([
+    const { data, error } = await supabase.from('influencers').insert([
       {
         name: newItem.name,
         category: newItem.category,
@@ -106,10 +139,19 @@ export async function addInfluencer(influencer) {
         bio: newItem.bio,
         socials: newItem.socials
       }
-    ]);
+    ]).select();
+
+    if (!error && data && data[0]) {
+      newItem.id = String(data[0].id);
+    }
   } catch (e) {
-    console.warn('Supabase insert failed, saved to local cache:', e);
+    console.warn('Supabase insert failed, saving to local cache:', e);
   }
+
+  // Save in local cache
+  const existing = await fetchInfluencers();
+  const updated = [newItem, ...existing.filter(i => i.id !== newItem.id)];
+  localStorage.setItem(INFLUENCERS_STORAGE_KEY, JSON.stringify(updated));
 
   return newItem;
 }
@@ -121,6 +163,7 @@ export async function updateInfluencer(id, updates) {
   localStorage.setItem(INFLUENCERS_STORAGE_KEY, JSON.stringify(updated));
 
   try {
+    const numericId = !isNaN(Number(id)) ? Number(id) : id;
     await supabase
       .from('influencers')
       .update({
@@ -136,7 +179,7 @@ export async function updateInfluencer(id, updates) {
         bio: updates.bio,
         socials: updates.socials
       })
-      .eq('id', id);
+      .eq('id', numericId);
   } catch (e) {
     console.warn('Supabase update failed:', e);
   }
@@ -150,7 +193,8 @@ export async function deleteInfluencer(id) {
   localStorage.setItem(INFLUENCERS_STORAGE_KEY, JSON.stringify(updated));
 
   try {
-    await supabase.from('influencers').delete().eq('id', id);
+    const numericId = !isNaN(Number(id)) ? Number(id) : id;
+    await supabase.from('influencers').delete().eq('id', numericId);
   } catch (e) {
     console.warn('Supabase delete failed:', e);
   }

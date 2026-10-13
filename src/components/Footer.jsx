@@ -176,10 +176,10 @@ export default function Footer({ onNavigate, onOpenLegal, onOpenAdmin, darkMode 
             <button onClick={() => onOpenLegal('privacy')} className={hover}>Données Personnelles & CDP</button>
             <span className="text-gray-600">•</span>
 
-            {/* Admin button in footer — discret */}
+            {/* Admin button in footer — caché par défaut, révélé uniquement au survol */}
             <button
               onClick={onOpenAdmin}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-[#8d1864] border border-white/8 hover:border-[#8d1864]/40 transition-all text-[11px] cursor-pointer"
+              className="opacity-0 hover:opacity-100 flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-gray-500 hover:text-[#8d1864] border border-transparent hover:border-[#8d1864]/50 transition-all duration-300 text-[11px] cursor-pointer"
               title="Espace Administrateur"
             >
               <Lock className="w-3 h-3" />

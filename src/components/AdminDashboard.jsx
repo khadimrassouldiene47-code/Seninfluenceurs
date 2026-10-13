@@ -4,11 +4,12 @@ import {
   Users, MessageSquare, Database, RefreshCw, Search, Eye, EyeOff,
   Newspaper, BarChart3, TrendingUp, Globe, Star, Activity,
   Sparkles, AlertCircle, Facebook, Instagram, Youtube, Twitter,
-  Layers, Tag
+  Layers, Tag, ArrowLeft, LogOut, Check, ExternalLink
 } from 'lucide-react';
 import {
   fetchInfluencers, addInfluencer, updateInfluencer,
-  deleteInfluencer, fetchContacts, seedSupabaseInfluencers
+  deleteInfluencer, fetchContacts, seedSupabaseInfluencers,
+  getSupabaseCredentials, reinitSupabaseClient
 } from '../lib/supabase';
 import { defaultArticles } from '../data/news';
 import ConfirmationModal from './ConfirmationModal';
@@ -34,12 +35,18 @@ const STATS_SEED = {
 const ADMIN_PASSWORD = 'sen2026';
 const DEFAULT_CATEGORIES = ["Top influenceurs", "Influenceurs", "Artistes", "Diaspora"];
 
-export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
-  const [authed, setAuthed]         = useState(false);
+export default function AdminDashboard({ isOpen = true, onClose, onRefreshCatalog, isPage = true }) {
+  const [authed, setAuthed]         = useState(() => {
+    try {
+      return sessionStorage.getItem('seninfluenceurs_admin_session') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [pwd, setPwd]               = useState('');
   const [showPwd, setShowPwd]       = useState(false);
   const [pwdError, setPwdError]     = useState('');
-  const [tab, setTab]               = useState('stats'); // stats | talents | categories | contacts | news | database
+  const [tab, setTab]               = useState('talents'); // defaults to talents for quick management
 
   // Data
   const [talents, setTalents]       = useState([]);
@@ -132,10 +139,20 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
     e.preventDefault();
     if (pwd === ADMIN_PASSWORD || pwd === 'admin') {
       setAuthed(true);
+      try {
+        sessionStorage.setItem('seninfluenceurs_admin_session', 'true');
+      } catch {}
       setPwdError('');
     } else {
       setPwdError("Code d'accès incorrect.");
     }
+  };
+
+  const logout = () => {
+    setAuthed(false);
+    try {
+      sessionStorage.removeItem('seninfluenceurs_admin_session');
+    } catch {}
   };
 
   // ── Talents ──
@@ -281,25 +298,59 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
   const tabBtn = (t) => `px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-colors ${tab === t ? 'bg-brand-600 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-lg overflow-y-auto animate-in fade-in duration-200">
+    <div className={isPage ? "min-h-screen bg-[#090A0E] text-slate-100 flex flex-col w-full" : "fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-lg overflow-y-auto animate-in fade-in duration-200"}>
       <div
-        className="relative w-full max-w-5xl rounded-3xl border border-white/15 overflow-hidden shadow-2xl bg-[#0E1017] my-6 flex flex-col max-h-[92vh]"
+        className={isPage ? "w-full max-w-7xl mx-auto p-3 sm:p-6 flex-1 flex flex-col" : "relative w-full max-w-5xl rounded-3xl border border-white/15 overflow-hidden shadow-2xl bg-[#0E1017] my-6 flex flex-col max-h-[92vh]"}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02] shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border border-white/10 bg-white/[0.02] rounded-2xl mb-4 shrink-0 shadow-lg">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-brand-600/20 text-brand-400 border border-brand-600/30 flex items-center justify-center">
-              <Lock className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-white font-display">Tableau de Bord Administrateur</h2>
-              <span className="text-[11px] text-slate-400">Gestion en temps réel • seninfluenceurs.com</span>
+            <button
+              onClick={onClose}
+              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-brand-600/20 text-slate-200 hover:text-brand-300 border border-white/10 hover:border-brand-500/40 text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer shadow-sm"
+              title="Retourner au site public"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Retour au site</span>
+            </button>
+            <div className="h-6 w-px bg-white/10 hidden sm:block" />
+            <div className="flex items-center space-x-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#8d1864]/20 text-[#8d1864] border border-[#8d1864]/40 flex items-center justify-center">
+                <Lock className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-white font-display leading-tight">Espace Administration</h2>
+                <span className="text-[11px] text-slate-400">SENINFLUENCEURS • Gestion en temps réel</span>
+              </div>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white">
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center space-x-2 self-end sm:self-auto">
+            {authed && (
+              <>
+                <button
+                  onClick={loadData}
+                  disabled={loading}
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer"
+                  title="Actualiser les données"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">Actualiser</span>
+                </button>
+                <button
+                  onClick={logout}
+                  className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer"
+                  title="Verrouiller la session"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Déconnexion</span>
+                </button>
+              </>
+            )}
+            <button onClick={onClose} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white cursor-pointer" title="Fermer et retourner au site">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* ── LOGIN ── */}
@@ -463,10 +514,20 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
                   {/* ── ADD / EDIT FORM ── */}
                   {showForm && (
                     <form onSubmit={saveTalent} className="rounded-2xl border border-brand-600/30 bg-brand-600/[0.04] p-5 space-y-4 animate-slide-up">
-                      <h4 className="text-sm font-bold text-brand-300 flex items-center space-x-2">
-                        <Sparkles className="w-4 h-4" />
-                        <span>{editingId ? 'Modifier le profil' : 'Nouveau talent'}</span>
-                      </h4>
+                      <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                        <button
+                          type="button"
+                          onClick={() => { setShowForm(false); setEditingId(null); }}
+                          className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 hover:text-white flex items-center space-x-1.5 transition-colors cursor-pointer"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <span>← Retour à la liste des talents</span>
+                        </button>
+                        <h4 className="text-sm font-bold text-brand-300 flex items-center space-x-2">
+                          <Sparkles className="w-4 h-4" />
+                          <span>{editingId ? 'Modifier le profil' : 'Nouveau talent'}</span>
+                        </h4>
+                      </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
@@ -809,7 +870,17 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
 
                   {showArticleForm && (
                     <form onSubmit={saveArticle} className="rounded-2xl border border-brand-600/30 bg-brand-600/[0.04] p-5 space-y-3 animate-slide-up">
-                      <h4 className="text-sm font-bold text-brand-300">{editingArticleId ? "Modifier l'article" : 'Nouvel article'}</h4>
+                      <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                        <button
+                          type="button"
+                          onClick={() => { setShowArticleForm(false); setEditingArticleId(null); }}
+                          className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 hover:text-white flex items-center space-x-1.5 transition-colors cursor-pointer"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <span>← Retour à la liste des articles</span>
+                        </button>
+                        <h4 className="text-sm font-bold text-brand-300">{editingArticleId ? "Modifier l'article" : 'Nouvel article'}</h4>
+                      </div>
                       <div>
                         <label className={labelCls}>Titre *</label>
                         <input required type="text" placeholder="Titre de l'article..." value={articleForm.title}
@@ -881,48 +952,104 @@ export default function AdminDashboard({ isOpen, onClose, onRefreshCatalog }) {
               {tab === 'database' && (
                 <div className="space-y-5">
                   <div className="glass-dark rounded-2xl p-6 border border-white/10 space-y-4">
-                    <h4 className="text-base font-bold text-white flex items-center space-x-2">
-                      <Database className="w-5 h-5 text-emerald-400" />
-                      <span>Connexion Supabase</span>
-                    </h4>
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-base font-bold text-white flex items-center space-x-2">
+                        <Database className="w-5 h-5 text-emerald-400" />
+                        <span>Configuration & Connexion Supabase</span>
+                      </h4>
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        Mode Hybride (Supabase + Cache Hors-ligne)
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-300">
+                      Toutes les modifications, créations et suppressions sont immédiatement appliquées et sauvegardées. Si Supabase est connecté, elles sont synchronisées dans votre base Postgres.
+                    </p>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
                       <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10">
-                        <div className="text-[10px] text-slate-400 mb-1">Projet ID</div>
-                        <code className="text-amber-300 font-mono">jvkrryakllbxplsynwpt</code>
+                        <div className="text-[10px] text-slate-400 mb-1">URL Supabase active</div>
+                        <code className="text-amber-300 font-mono text-[11px] break-all">{getSupabaseCredentials().url}</code>
                       </div>
                       <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10">
-                        <div className="text-[10px] text-slate-400 mb-1">Région</div>
-                        <code className="text-sky-300 font-mono">eu-west-1 (Ireland)</code>
-                      </div>
-                      <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10">
-                        <div className="text-[10px] text-slate-400 mb-1">Table influenceurs</div>
+                        <div className="text-[10px] text-slate-400 mb-1">Table des profils</div>
                         <code className="text-emerald-300 font-mono">public.influencers</code>
-                      </div>
-                      <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10">
-                        <div className="text-[10px] text-slate-400 mb-1">Table contacts</div>
-                        <code className="text-emerald-300 font-mono">public.contacts</code>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-white/10">
-                      <p className="text-xs text-slate-400 mb-3">
-                        Lancez d'abord le script <code className="text-amber-300">supabase-schema.sql</code> dans l'éditeur SQL de votre dashboard Supabase, puis synchronisez les profils.
+                    <div className="pt-2 border-t border-white/10 space-y-3">
+                      <p className="text-xs text-slate-400">
+                        Pour lier un nouveau projet Supabase, collez votre URL de projet et votre clé publique anonyme (anon key) :
                       </p>
-                      <button
-                        onClick={async () => {
-                          setSyncMsg('Synchronisation vers Supabase...');
-                          try {
-                            await seedSupabaseInfluencers();
-                            setSyncMsg('✅ Profils synchronisés avec succès !');
-                          } catch (e) {
-                            setSyncMsg(`ℹ️ ${e.message || 'Tables déjà peuplées ou vérifier RLS'}`);
-                          }
-                        }}
-                        className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center space-x-2 shadow-md"
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                        <span>Synchroniser les profils vers Supabase</span>
-                      </button>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className={labelCls}>Supabase Project URL</label>
+                          <input
+                            type="text"
+                            placeholder="https://xyz.supabase.co"
+                            defaultValue={getSupabaseCredentials().url}
+                            id="custom-supabase-url"
+                            className={inputCls}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelCls}>Supabase Anon Key</label>
+                          <input
+                            type="password"
+                            placeholder="sb_publishable_... ou eyJ..."
+                            defaultValue={getSupabaseCredentials().key}
+                            id="custom-supabase-key"
+                            className={inputCls}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const u = document.getElementById('custom-supabase-url')?.value?.trim();
+                            const k = document.getElementById('custom-supabase-key')?.value?.trim();
+                            if (u && k) {
+                              reinitSupabaseClient(u, k);
+                              setSyncMsg('✅ Configuration Supabase enregistrée avec succès !');
+                            }
+                          }}
+                          className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition-colors cursor-pointer"
+                        >
+                          Enregistrer la configuration
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            setSyncMsg('Test de la connexion Supabase...');
+                            try {
+                              const t = await fetchInfluencers();
+                              setSyncMsg(`✅ Connexion réussie ! ${t.length} talent(s) chargés.`);
+                            } catch (e) {
+                              setSyncMsg(`⚠️ Erreur : ${e.message}`);
+                            }
+                          }}
+                          className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          Tester la connexion
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            setSyncMsg('Synchronisation des 3 talents par défaut vers Supabase...');
+                            try {
+                              await seedSupabaseInfluencers();
+                              setSyncMsg('✅ Profils modèles envoyés avec succès dans Supabase !');
+                            } catch (e) {
+                              setSyncMsg(`ℹ️ ${e.message || 'Vérifiez la table ou les règles RLS'}`);
+                            }
+                          }}
+                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center space-x-1.5 shadow-md cursor-pointer"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Synchroniser vers Supabase</span>
+                        </button>
+                      </div>
                       {syncMsg && <p className="text-xs text-amber-300 mt-2 font-medium">{syncMsg}</p>}
                     </div>
                   </div>

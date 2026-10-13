@@ -23,7 +23,9 @@ import { defaultInfluencers } from './data/influencers';
 export default function App() {
   const [activePage,          setActivePage]         = useState(() => {
     if (typeof window !== 'undefined') {
-      const p = window.location.pathname;
+      const p = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      if (p.includes('/admin') || hash === '#admin') return 'admin';
       if (p.includes('/news')) return 'news';
       if (p.includes('/rejoindre') || p.includes('/join')) return 'join';
       if (p.includes('/services')) return 'services';
@@ -35,7 +37,6 @@ export default function App() {
   });
   const [influencers,         setInfluencers]        = useState(defaultInfluencers);
   const [selectedInfluencer,  setSelectedInfluencer] = useState(null);
-  const [isAdminOpen,         setIsAdminOpen]        = useState(false);
   const [isSearchOpen,        setIsSearchOpen]       = useState(false);
   const [legalModalType,      setLegalModalType]     = useState(null);
   const [scrollProgress,      setScrollProgress]     = useState(0);
@@ -90,10 +91,57 @@ export default function App() {
     return () => window.removeEventListener('keydown', fn);
   }, []);
 
+  // History popstate listener (back/forward buttons)
+  useEffect(() => {
+    const handlePopState = () => {
+      const p = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      if (p.includes('/admin') || hash === '#admin') setActivePage('admin');
+      else if (p.includes('/news')) setActivePage('news');
+      else if (p.includes('/join') || p.includes('/rejoindre')) setActivePage('join');
+      else if (p.includes('/services')) setActivePage('services');
+      else if (p.includes('/about')) setActivePage('about');
+      else if (p.includes('/contact')) setActivePage('contact');
+      else if (p.includes('/influencers')) setActivePage('influencers');
+      else setActivePage('home');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const go = (pageId) => {
     setActivePage(pageId);
+    if (typeof window !== 'undefined') {
+      try {
+        if (pageId === 'admin') {
+          window.history.pushState(null, '', '/admin');
+        } else if (pageId === 'home') {
+          window.history.pushState(null, '', '/');
+        } else {
+          window.history.pushState(null, '', `/${pageId}`);
+        }
+      } catch {}
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // If on admin route, render full-page AdminDashboard
+  if (activePage === 'admin') {
+    return (
+      <div className={`min-h-screen bg-[#090A0D] text-slate-100 flex flex-col`}>
+        <AdminDashboard
+          isPage={true}
+          isOpen={true}
+          onClose={() => go('home')}
+          onRefreshCatalog={() =>
+            fetchInfluencers()
+              .then(data => { if (data?.length) setInfluencers(data); })
+              .catch(() => {})
+          }
+        />
+      </div>
+    );
+  }
 
   // Body background
   const bodyBg = darkMode ? 'bg-[#090A0D] text-slate-100' : 'bg-gray-50 text-gray-900';
@@ -191,7 +239,7 @@ export default function App() {
       <Footer
         onNavigate={go}
         onOpenLegal={setLegalModalType}
-        onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenAdmin={() => go('admin')}
         darkMode={darkMode}
       />
 
@@ -200,16 +248,6 @@ export default function App() {
         influencer={selectedInfluencer}
         onClose={() => setSelectedInfluencer(null)}
         darkMode={darkMode}
-      />
-
-      <AdminDashboard
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-        onRefreshCatalog={() =>
-          fetchInfluencers()
-            .then(data => { if (data?.length) setInfluencers(data); })
-            .catch(() => {})
-        }
       />
 
       <GlobalSearchModal
