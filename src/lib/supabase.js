@@ -60,9 +60,24 @@ export function initLocalStorageSeeds() {
   }
 }
 
-// Fetch Influencers (Supabase first, fallback to LocalStorage/Default)
+// ⚡ Synchronously get cached influencers in 0ms (no network delay)
+export function getStoredInfluencers() {
+  if (typeof window === 'undefined') return defaultInfluencers;
+  try {
+    const cached = localStorage.getItem(INFLUENCERS_STORAGE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {}
+  return defaultInfluencers;
+}
+
+// Fetch Influencers (returns local cache immediately or refreshes from Supabase)
 export async function fetchInfluencers() {
   initLocalStorageSeeds();
+
+  // Background fetch from Supabase
   try {
     const { data, error } = await supabase
       .from('influencers')
@@ -85,7 +100,8 @@ export async function fetchInfluencers() {
         bio: item.bio || '',
         socials: item.socials || {}
       }));
-      // update cache
+
+      // Update local storage cache
       localStorage.setItem(INFLUENCERS_STORAGE_KEY, JSON.stringify(formatted));
       return formatted;
     }
@@ -93,25 +109,17 @@ export async function fetchInfluencers() {
     console.warn('Supabase not available, using offline cache/seed:', err);
   }
 
-  // Fallback to local storage
-  const cached = localStorage.getItem(INFLUENCERS_STORAGE_KEY);
-  if (cached) {
-    try {
-      return JSON.parse(cached);
-    } catch (e) {
-      // ignore
-    }
-  }
-  return defaultInfluencers;
+  // Fallback to local storage (0ms)
+  return getStoredInfluencers();
 }
 
-// Create or Add Influencer
+// Create or Add Influencer (Instant 0ms UI update + background Supabase sync)
 export async function addInfluencer(influencer) {
   const localTempId = Date.now().toString();
   let newItem = {
     id: localTempId,
     name: influencer.name,
-    category: influencer.category || 'Influenceurs',
+    category: influencer.category || 'Top influenceurs',
     niche: influencer.niche || 'Lifestyle',
     followers: influencer.followers || '100K',
     followersCount: parseInt(influencer.followersCount, 10) || 100000,
@@ -123,7 +131,15 @@ export async function addInfluencer(influencer) {
     socials: influencer.socials || {}
   };
 
-  // Attempt save in Supabase first to get real generated ID
+  // 1. Instant local storage update (0ms latency!)
+  const existing = getStoredInfluencers();
+  const updated = [newItem, ...existing.filter(i => String(i.id) !== String(newItem.id))];
+  localStorage.setItem(INFLUENCERS_STORAGE_KEY, JSON.stringify(updated));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('influencers-updated', { detail: updated }));
+  }
+
+  // 2. Persist in Supabase in parallel
   try {
     const { data, error } = await supabase.from('influencers').insert([
       {
@@ -143,25 +159,30 @@ export async function addInfluencer(influencer) {
 
     if (!error && data && data[0]) {
       newItem.id = String(data[0].id);
+      const synced = updated.map(i => i.id === localTempId ? { ...i, id: String(data[0].id) } : i);
+      localStorage.setItem(INFLUENCERS_STORAGE_KEY, JSON.stringify(synced));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('influencers-updated', { detail: synced }));
+      }
     }
   } catch (e) {
     console.warn('Supabase insert failed, saving to local cache:', e);
   }
 
-  // Save in local cache
-  const existing = await fetchInfluencers();
-  const updated = [newItem, ...existing.filter(i => i.id !== newItem.id)];
-  localStorage.setItem(INFLUENCERS_STORAGE_KEY, JSON.stringify(updated));
-
   return newItem;
 }
 
-// Update Influencer
+// Update Influencer (Instant 0ms UI update + background Supabase sync)
 export async function updateInfluencer(id, updates) {
-  const existing = await fetchInfluencers();
-  const updated = existing.map((item) => (item.id === id ? { ...item, ...updates } : item));
+  // 1. Instant local storage update (0ms latency!)
+  const existing = getStoredInfluencers();
+  const updated = existing.map((item) => (String(item.id) === String(id) ? { ...item, ...updates } : item));
   localStorage.setItem(INFLUENCERS_STORAGE_KEY, JSON.stringify(updated));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('influencers-updated', { detail: updated }));
+  }
 
+  // 2. Persist in Supabase
   try {
     const numericId = !isNaN(Number(id)) ? Number(id) : id;
     await supabase
@@ -186,12 +207,17 @@ export async function updateInfluencer(id, updates) {
   return updated;
 }
 
-// Delete Influencer
+// Delete Influencer (Instant 0ms UI update + background Supabase sync)
 export async function deleteInfluencer(id) {
-  const existing = await fetchInfluencers();
-  const updated = existing.filter((item) => item.id !== id);
+  // 1. Instant local storage update (0ms latency!)
+  const existing = getStoredInfluencers();
+  const updated = existing.filter((item) => String(item.id) !== String(id));
   localStorage.setItem(INFLUENCERS_STORAGE_KEY, JSON.stringify(updated));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('influencers-updated', { detail: updated }));
+  }
 
+  // 2. Persist delete in Supabase
   try {
     const numericId = !isNaN(Number(id)) ? Number(id) : id;
     await supabase.from('influencers').delete().eq('id', numericId);

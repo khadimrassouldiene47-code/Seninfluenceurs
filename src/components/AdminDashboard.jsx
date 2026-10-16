@@ -9,8 +9,9 @@ import {
 import {
   fetchInfluencers, addInfluencer, updateInfluencer,
   deleteInfluencer, fetchContacts, seedSupabaseInfluencers,
-  getSupabaseCredentials, reinitSupabaseClient
+  getSupabaseCredentials, reinitSupabaseClient, getStoredInfluencers
 } from '../lib/supabase';
+import { compressImage } from '../lib/imageCompressor';
 import { defaultArticles } from '../data/news';
 import ConfirmationModal from './ConfirmationModal';
 
@@ -111,7 +112,9 @@ export default function AdminDashboard({ isOpen = true, onClose, onRefreshCatalo
     verified: true, featured: false, showFollowers: false, engagementRate: '8.5%', bio: '',
     socials: { tiktok: '', instagram: '', facebook: '', youtube: '', snapchat: '', linkedin: '' }
   };
-  const [form, setForm]             = useState(blankForm);
+  const [form, setForm]                         = useState(blankForm);
+  const [compressingPhoto, setCompressingPhoto] = useState(false);
+  const [photoInfo, setPhotoInfo]               = useState('');
 
   // Article form
   const [showArticleForm, setShowArticleForm] = useState(false);
@@ -159,14 +162,18 @@ export default function AdminDashboard({ isOpen = true, onClose, onRefreshCatalo
   const saveTalent = async (e) => {
     e.preventDefault();
     setLoading(true);
-    if (editingId) await updateInfluencer(editingId, form);
-    else await addInfluencer(form);
-    await loadData();
-    if (onRefreshCatalog) onRefreshCatalog();
-    setShowForm(false);
-    setEditingId(null);
-    setForm(blankForm);
-    setLoading(false);
+    try {
+      if (editingId) await updateInfluencer(editingId, form);
+      else await addInfluencer(form);
+      setTalents(getStoredInfluencers());
+      if (onRefreshCatalog) onRefreshCatalog();
+      setShowForm(false);
+      setEditingId(null);
+      setForm(blankForm);
+      setPhotoInfo('');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const startEdit = (t) => {
@@ -179,6 +186,7 @@ export default function AdminDashboard({ isOpen = true, onClose, onRefreshCatalo
       engagementRate: t.engagementRate, bio: t.bio,
       socials: t.socials || { tiktok: '', instagram: '', facebook: '', youtube: '', snapchat: '', linkedin: '' }
     });
+    setPhotoInfo('');
     setShowForm(true);
     setTab('talents');
   };
@@ -191,20 +199,35 @@ export default function AdminDashboard({ isOpen = true, onClose, onRefreshCatalo
       isDanger: true,
       onConfirm: async () => {
         setLoading(true);
-        await deleteInfluencer(id);
-        await loadData();
-        if (onRefreshCatalog) onRefreshCatalog();
-        setLoading(false);
+        try {
+          await deleteInfluencer(id);
+          setTalents(getStoredInfluencers());
+          if (onRefreshCatalog) onRefreshCatalog();
+        } finally {
+          setLoading(false);
+        }
       }
     });
   };
 
-  const uploadPhoto = (e) => {
+  // ⚡ Auto-compression WebP (reduces 5-10 MB raw photos to ~30-60 KB)
+  const uploadPhoto = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setForm(p => ({ ...p, photo: reader.result }));
-    reader.readAsDataURL(file);
+    setCompressingPhoto(true);
+    setPhotoInfo('');
+    try {
+      const res = await compressImage(file, 800, 1000, 0.78);
+      setForm(p => ({ ...p, photo: res.dataUrl }));
+      setPhotoInfo(`✓ Optimisé WebP : ${res.sizeKb} Ko (qualité HD, léger pour Supabase)`);
+    } catch (err) {
+      console.warn('Compression error, fallback:', err);
+      const reader = new FileReader();
+      reader.onloadend = () => setForm(p => ({ ...p, photo: reader.result }));
+      reader.readAsDataURL(file);
+    } finally {
+      setCompressingPhoto(false);
+    }
   };
 
   // ── Categories CRUD handlers ──
@@ -571,20 +594,36 @@ export default function AdminDashboard({ isOpen = true, onClose, onRefreshCatalo
 
                       {/* Photo */}
                       <div>
-                        <label className={labelCls}>Photo (URL Cloudinary/Cloudflare ou upload fichier/téléphone)</label>
+                        <div className="flex items-center justify-between">
+                          <label className={labelCls}>Photo de profil (URL web ou upload fichier)</label>
+                          <span className="text-[10px] text-emerald-400 font-mono">Format WebP ultra-léger (max ~50 Ko)</span>
+                        </div>
                         <div className="flex gap-2">
-                          <input type="url" placeholder="https://res.cloudinary.com/..." value={form.photo}
-                            onChange={e => setForm(p => ({ ...p, photo: e.target.value }))} className={inputCls} />
-                          <label className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-white border border-white/10 cursor-pointer flex items-center space-x-1.5 shrink-0">
-                            <Upload className="w-3.5 h-3.5 text-brand-300" />
-                            <span>Upload</span>
-                            <input type="file" accept="image/*" onChange={uploadPhoto} className="hidden" />
+                          <input type="url" placeholder="https://... ou cliquez sur Upload" value={form.photo}
+                            onChange={e => {
+                              setForm(p => ({ ...p, photo: e.target.value }));
+                              setPhotoInfo('');
+                            }} className={inputCls} />
+                          <label className={`px-3 py-2 rounded-xl text-xs text-white border border-white/10 cursor-pointer flex items-center space-x-1.5 shrink-0 transition-colors ${compressingPhoto ? 'bg-brand-600/50 cursor-wait' : 'bg-white/10 hover:bg-white/15'}`}>
+                            {compressingPhoto ? (
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin text-brand-300" />
+                            ) : (
+                              <Upload className="w-3.5 h-3.5 text-brand-300" />
+                            )}
+                            <span>{compressingPhoto ? 'Compression...' : 'Upload photo'}</span>
+                            <input type="file" accept="image/*" onChange={uploadPhoto} disabled={compressingPhoto} className="hidden" />
                           </label>
                         </div>
-                        {form.photo && (
+                        {photoInfo && (
+                          <div className="mt-1.5 flex items-center space-x-2 text-[11px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                            <span>{photoInfo}</span>
+                          </div>
+                        )}
+                        {form.photo && !photoInfo && (
                           <div className="mt-1.5 flex items-center space-x-2">
                             <img src={form.photo} alt="preview" className="w-8 h-8 rounded-lg object-cover border border-white/20" />
-                            <span className="text-[11px] text-emerald-400">Image chargée</span>
+                            <span className="text-[11px] text-emerald-400">Photo prête</span>
                           </div>
                         )}
                       </div>

@@ -17,7 +17,7 @@ import GlobalSearchModal from './components/GlobalSearchModal';
 import FloatingWhatsApp  from './components/FloatingWhatsApp';
 import CookieBanner      from './components/CookieBanner';
 import LegalModal        from './components/LegalModal';
-import { fetchInfluencers } from './lib/supabase';
+import { fetchInfluencers, getStoredInfluencers } from './lib/supabase';
 import { defaultInfluencers } from './data/influencers';
 
 export default function App() {
@@ -35,7 +35,9 @@ export default function App() {
     }
     return 'home';
   });
-  const [influencers,         setInfluencers]        = useState(defaultInfluencers);
+
+  // ⚡ Instant 0ms load on refresh from local cache
+  const [influencers,         setInfluencers]        = useState(() => getStoredInfluencers());
   const [selectedInfluencer,  setSelectedInfluencer] = useState(null);
   const [isSearchOpen,        setIsSearchOpen]       = useState(false);
   const [legalModalType,      setLegalModalType]     = useState(null);
@@ -61,7 +63,24 @@ export default function App() {
 
   const toggleDarkMode = () => setDarkMode(prev => !prev);
 
-  // Load influencers
+  // Real-time synchronization listener (when admin saves or edits)
+  useEffect(() => {
+    const handleSync = (e) => {
+      if (e.detail && Array.isArray(e.detail)) {
+        setInfluencers(e.detail);
+      } else {
+        setInfluencers(getStoredInfluencers());
+      }
+    };
+    window.addEventListener('influencers-updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('influencers-updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
+  // Background refresh from Supabase
   useEffect(() => {
     fetchInfluencers()
       .then(data => { if (data?.length) setInfluencers(data); })
